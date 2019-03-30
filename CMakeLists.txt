@@ -1,0 +1,5 @@
+add_subdirectory(RISCV_UVMSYSTEMC)
+add_subdirectory(RISCV_UVMSYSTEMC_INT)
+add_subdirectory(BUS_UVMSYSTEMC)
+add_subdirectory(BUS_UVMSYSTEMC_2)
+add_subdirectory(BUS_UVMSYSTEMC_3)
