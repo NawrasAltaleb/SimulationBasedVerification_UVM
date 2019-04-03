@@ -62,31 +62,18 @@ public:
                 /// read dut request
                 vif_toMemory->toMemory_Port.read(req.toMemory);
                 item_collected_port_toMemory.write(req);
-            }
-
-            /// store instruction process
-            if (req.toMemory.req == ME_AccessType::ME_WR) {
-                /// write to sequence the store value
                 this->seq_item_port->item_done();
                 this->seq_item_port->put_response(req);
-
-                /// in order to get next instruction we need to initiate a new sequence item just to give back the dut request
-                this->seq_item_port->get_next_item(rsp);
-                //no writing to dut
-                drive_fromMemory(rsp); // TODO: This should be commented in case of a STORE instruction without reading
-                item_collected_port_fromMemory.write(rsp); // TODO: This should be commented in case of a STORE instruction without reading
-                req.set_id_info(rsp);
-                /// read dut request (Instruction)
-                vif_toMemory->toMemory_Port.read(req.toMemory);
-                item_collected_port_toMemory.write(req);
+            } else {
+                this->seq_item_port->item_done();
+                this->seq_item_port->put_response(req);
             }
-
-            this->seq_item_port->item_done();
-            this->seq_item_port->put_response(req);
         }
     }
 
     void drive_fromMemory(const RSP &rsp) {
+//        if(this->get_full_name() == "my_test.tb.g_uvc.agent.driver")
+//            std::cout << hex<<rsp.fromMemory.loadedData <<"\n";
         vif_fromMemory->fromMemory_Port.write(rsp.fromMemory); /// Driver output signals are written to the interface directly
     }
 

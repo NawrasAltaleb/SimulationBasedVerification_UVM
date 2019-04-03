@@ -23,6 +23,7 @@ using namespace uvm;
 class testbench : public uvm_env {
 public:
     /// All components in the test bench will be dynamically instantiated so they can be overridden by the test if necessary
+    vip_uvc *uvc_gm;
     vip_uvc *uvc;
     scoreboard *scoreboard1;
 
@@ -30,23 +31,31 @@ public:
 
     testbench(uvm_component_name name)
             : uvm_env(name),
+              uvc_gm(0),
               uvc(0),
               scoreboard1(0) {}
 
     void build_phase(uvm_phase &phase) {
         uvm_env::build_phase(phase);
 
+        uvc_gm = vip_uvc::type_id::create("uvc_gm", this);
+        assert(uvc_gm);
         uvc = vip_uvc::type_id::create("uvc", this); /// Call to the factory which creates and instantiates this component dynamically
         assert(uvc);
+
         scoreboard1 = scoreboard::type_id::create("scoreboard1", this);
         assert(scoreboard1);
 
+        uvm_config_db<int>::set(this, "uvc_gm.agent", "is_active", uvm::UVM_ACTIVE);
         uvm_config_db<int>::set(this, "uvc.agent", "is_active", uvm::UVM_ACTIVE);
     }
 
     void connect_phase(uvm_phase &phase) {
-        uvc->agent->driver->item_collected_port_fromMemory.connect(scoreboard1->listener_fromMemory);
-        uvc->agent->driver->item_collected_port_toMemory.connect(scoreboard1->listener_toMemory);
+        uvc_gm->agent->driver->item_collected_port_fromMemory.connect(scoreboard1->listener_fromMemory_gm);
+        uvc_gm->agent->driver->item_collected_port_toMemory.connect(scoreboard1->listener_toMemory_gm);
+
+        uvc->agent->driver->item_collected_port_fromMemory.connect(scoreboard1->listener_fromMemory_dut);
+        uvc->agent->driver->item_collected_port_toMemory.connect(scoreboard1->listener_toMemory_dut);
     }
 
 }; // class testbench

@@ -47,7 +47,7 @@ public:
             seqReq->next();
             req->bus_req = (*seqReq);
 
-            std::cout << "sequence "<< this->get_name() << "....."<< req->bus_req.addr <<"...... " << req->bus_req.data << " type " << req->bus_req.trans_type << " i= " << i << "\n";
+            // std::cout << "sequence "<< this->get_name() << "....."<< req->bus_req.addr <<"...... " << req->bus_req.data << " type " << req->bus_req.trans_type << " i= " << i << "\n";
 
             rsp->bus_resp.ack = ERR;
             while(rsp->bus_resp.ack != OK) {

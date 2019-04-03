@@ -15,7 +15,6 @@
 #ifndef UVMSYSTEMC_SEQUENCE_INIT_H
 #define UVMSYSTEMC_SEQUENCE_INIT_H
 
-//#include <uvm>
 using namespace uvm;
 // my version
 #include <scv.h>

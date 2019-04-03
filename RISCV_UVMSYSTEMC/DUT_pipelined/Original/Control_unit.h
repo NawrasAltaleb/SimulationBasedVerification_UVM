@@ -8,9 +8,7 @@
 #include "systemc.h"
 #include "Interfaces.h"
 #include "CPU_Interfaces.h"
-#include "../../../RISCV_commons/Memory_Interfaces.h"
-#include "../../../RISCV_commons/Utilities.h"
-#include "../../../RISCV_commons/Defines.h"
+#include "Memory_Interfaces.h"
 
 
 class Control_unit : public sc_module {
@@ -117,11 +115,6 @@ public:
     bool                getStallTwice(EncType currEncType, EncType prevEncType, unsigned int regRs1Addr, unsigned int regRs2Addr, unsigned int regRdAddr) const;
     unsigned int        getPC(PC_SelType pcSel, unsigned int imm, bool branchTaken, unsigned int reg1Content, unsigned int pcReg) const;
 
-#ifdef LOGTOFILE
-    InstrType instrType_prev2;
-    InstrType instrType_prev3;
-#endif
-
 };
 
 
@@ -156,19 +149,11 @@ void Control_unit::run() {
                 CUtoDP_data.loadedData = 0;
             }
 
-#if SCAM == 0
             // Terminate if:
             if (MEtoCU_data.loadedData == 0X00100073) {
                 cout << "@CU: End of program... Terminating!" << endl;
                 break;
-
-#ifdef LOGTOFILE
-                cout << "@CU: End of program... Terminating!" << endl;
-#endif
-//                sc_stop();
-//                wait(SC_ZERO_TIME);
             }
-#endif
             nextsection = decodeInstr;
         }
 
@@ -195,18 +180,6 @@ void Control_unit::run() {
             DEtoCU_data.dmemMask_s4 = getDmemMask(encodedInstr);
             DEtoCU_data.regFileReq_s5 = getRegFileReqS5(encodedInstr);
             DEtoCU_data.regFileWriteDataSel_s5 = getRegFileWriteDataSel(encodedInstr);
-
-#ifdef LOGTOFILE
-            cout << "S2: @DE: Decoding instr 0x" << hex << encodedInstr << ", InstrType = " << stringInstrType(DEtoCU_data.instrType_s2) << endl;
-
-            if (DEtoCU_data.encType_s2 == ENC_I_J || DEtoCU_data.encType_s2 == ENC_B || DEtoCU_data.encType_s2 == ENC_J) {
-                cout << "S2: @DE: Immediate = 0x" << hex << DEtoCU_data.imm_s2 << "(hex) = "
-                     << dec << DEtoCU_data.imm_s2 << "(dec)" << endl;
-            } else {
-                cout << "S2: @DE: Immediate = 0x" << hex << DEtoCU_data.imm_s3 << "(hex) = "
-                     << dec << DEtoCU_data.imm_s3 << "(dec)" << endl;
-            }
-#endif
 
             nextsection = setStallSignals;
         }
@@ -299,10 +272,6 @@ void Control_unit::run() {
                 CUtoDP_5_s2.regFileReq_s5 = RF_WR_X;
                 CUtoDP_5_s2.regFileWriteDataSel_s5 = WB_X;
 
-#ifdef LOGTOFILE
-                CUtoDP_data.instrType_s2 = InstrType::INSTR_ADDI;
-#endif
-
             } else {
 
                 currPCsel = DEtoCU_data.pcSel_s2;
@@ -327,9 +296,6 @@ void Control_unit::run() {
                 CUtoDP_5_s2.regFileReq_s5 = DEtoCU_data.regFileReq_s5;
                 CUtoDP_5_s2.regFileWriteDataSel_s5 = DEtoCU_data.regFileWriteDataSel_s5;
 
-#ifdef LOGTOFILE
-                CUtoDP_data.instrType_s2 = DEtoCU_data.instrType_s2;
-#endif
             }
 
             CUtoDP_data.aluFunc_s3 = CUtoDP_3_s3.aluFunc_s3;
@@ -389,11 +355,6 @@ void Control_unit::run() {
 
                 pc = getPC(currPCsel, currPCimm, currBranchTaken, currReg1Content, CUtoDP_data.pc_s2);
             }
-
-#ifdef LOGTOFILE
-            instrType_prev3 = instrType_prev2;
-            instrType_prev2 = prevInstrType;
-#endif
 
             nextsection = setPipelineSignals;
         }
@@ -923,14 +884,8 @@ unsigned int Control_unit::getPC(PC_SelType pcSel, unsigned int imm, bool branch
 
     if (pcSel == PC_BR) {
         if (branchTaken) {
-#ifdef LOGTOFILE
-            cout << "S2: @PC: .~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~BRANCH TAKEN~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~." << endl;
-#endif
             return pcReg - 8 + imm;
         } else {
-#ifdef LOGTOFILE
-            cout << "S2: @PC: .~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~BRANCH NOT TAKEN~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~.~" << endl;
-#endif
             return pcReg + 4;
         }
     } else if (pcSel == PC_J) {

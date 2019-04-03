@@ -27,6 +27,8 @@ using namespace uvm;
 class test_R : public uvm_test {
 public:
     testbench *tb;
+    sequence_R<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_R<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_R(uvm_component_name name) : uvm_test(name) {}
 
@@ -35,13 +37,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_R<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_R<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_R<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("R_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_R::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_R::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -53,6 +73,8 @@ public:
 class test_I_I : public uvm_test {
 public:
     testbench *tb;
+    sequence_I_I<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_I_I<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_I_I(uvm_component_name name) : uvm_test(name) {}
 
@@ -61,13 +83,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_I_I<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_I_I<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_I_I<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("I_I_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_I_I::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_I_I::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -79,6 +119,8 @@ public:
 class test_I_L : public uvm_test {
 public:
     testbench *tb;
+    sequence_I_L<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_I_L<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_I_L(uvm_component_name name) : uvm_test(name) {}
 
@@ -87,13 +129,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_I_L<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_I_L<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_I_L<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("I_L_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_I_L::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_I_L::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -105,6 +165,8 @@ public:
 class test_I_J : public uvm_test {
 public:
     testbench *tb;
+    sequence_I_J<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_I_J<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_I_J(uvm_component_name name) : uvm_test(name) {}
 
@@ -113,13 +175,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_I_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_I_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_I_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("I_J_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_I_J::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_I_J::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -131,6 +211,8 @@ public:
 class test_S : public uvm_test {
 public:
     testbench *tb;
+    sequence_S<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_S<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_S(uvm_component_name name) : uvm_test(name) {}
 
@@ -139,13 +221,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_S<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_S<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_S<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("S_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_S::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_S::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -157,6 +257,8 @@ public:
 class test_B : public uvm_test {
 public:
     testbench *tb;
+    sequence_B<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_B<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_B(uvm_component_name name) : uvm_test(name) {}
 
@@ -165,13 +267,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_B<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_B<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_B<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("B_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_B::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_B::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -183,6 +303,8 @@ public:
 class test_U : public uvm_test {
 public:
     testbench *tb;
+    sequence_U<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_U<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_U(uvm_component_name name) : uvm_test(name) {}
 
@@ -191,13 +313,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_U<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_U<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_U<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("U_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_U::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_U::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {
@@ -209,6 +349,8 @@ public:
 class test_J : public uvm_test {
 public:
     testbench *tb;
+    sequence_J<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_J<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_J(uvm_component_name name) : uvm_test(name) {}
 
@@ -217,13 +359,31 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase",
-                                                 "default_sequence", sequence_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_J<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 555;
+        seq_gm->seedNUM = 555;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
         uvm_report_info("J_Type Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
+    }
+
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_J::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_J::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice){
+        phase->raise_objection(this,"Starting test");
+        if(choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this,"Finishing test");
     }
 
     void report_phase(uvm_phase &phase) {

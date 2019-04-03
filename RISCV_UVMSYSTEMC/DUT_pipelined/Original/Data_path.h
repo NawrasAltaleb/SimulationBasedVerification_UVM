@@ -8,7 +8,6 @@
 #include "systemc.h"
 #include "Interfaces.h"
 #include "CPU_Interfaces.h"
-#include "../../../RISCV_commons/Utilities.h"
 
 
 class Data_path : public sc_module {
@@ -89,16 +88,6 @@ void Data_path::run() {
 
             if (rec) {
 
-#ifdef LOGTOFILE
-                cout << "S2: @DP:                                                                                           "
-                     << setw(7) << stringInstrType(CUtoDP_data.instrType_s2) << "  :  " << setw(7) << stringInstrType(DP_S3_data.instrType_s3) << "  :  "
-                     << setw(7) << stringInstrType(DP_S4_data.instrType_s4) << "  :  " << setw(7) << stringInstrType(DP_S5_data.instrType_s5) << endl;
-
-                cout << "S2: @DP:                                                                                           "
-                     << hex << "0x" << setw(5) << CUtoDP_data.pc_s2 << "  :  " << "0x" << setw(5) << DP_S3_data.pc_s3 << "  :  "
-                            << "0x" << setw(5) << DP_S4_data.pc_s4 << "  :  " << "0x" << setw(5) << DP_S5_data.pc_s5 << endl;
-#endif
-
                 RFtoDP_port->read(RFtoDP_data);
 
                 reg1Content = regContentFwdUnit(CUtoDP_data.regRs1Addr_s2, DP_S4_data.regRdAddr_s4, DP_S4_data.encType_s4, DP_S5_data.regRdAddr_s5, DP_S5_data.encType_s5, CUtoDP_data.loadedData, DP_S5_data.pc_s5, DP_S4_data.pc_s4, DP_S4_data.aluResult_s4, DP_S5_data.aluResult_s5, getRegContent(CUtoDP_data.regFileReq_s2, CUtoDP_data.regRs1Addr_s2, RFtoDP_data));
@@ -111,10 +100,6 @@ void Data_path::run() {
 
             } else {
 
-#ifdef LOGTOFILE
-                cout << "S2: @DP: Control unit did not send data yet, try reading again" << endl;
-#endif
-
             }
         }
 
@@ -123,14 +108,6 @@ void Data_path::run() {
             DPtoAL_data.aluFunc = CUtoDP_data.aluFunc_s3;
             DPtoAL_data.aluOp1 = getALUoperand(CUtoDP_data.aluOp1Sel_s3, aluOpFwdUnit(DP_S3_data.regRs1Addr_s3, DP_S4_data.regRdAddr_s4, DP_S5_data.regRdAddr_s5, DP_S5_data.encType_s5, CUtoDP_data.loadedData, DP_S4_data.aluResult_s4, DP_S3_data.reg1Content_s3), CUtoDP_data.imm_s3, DP_S3_data.pc_s3);
             DPtoAL_data.aluOp2 = getALUoperand(CUtoDP_data.aluOp2Sel_s3, aluOpFwdUnit(DP_S3_data.regRs2Addr_s3, DP_S4_data.regRdAddr_s4, DP_S5_data.regRdAddr_s5, DP_S5_data.encType_s5, CUtoDP_data.loadedData, DP_S4_data.aluResult_s4, DP_S3_data.reg2Content_s3), CUtoDP_data.imm_s3, DP_S3_data.pc_s3);
-
-#ifdef LOGTOFILE
-            if (DPtoAL_data.aluFunc != ALU_X) {
-                cout << "S3: @AL: Operand1 = 0x" << hex << DPtoAL_data.aluOp1 << "(hex) = " << dec << DPtoAL_data.aluOp1 << "(dec), Operand2 = 0x" << hex << DPtoAL_data.aluOp2
-                     << "(hex) = " << dec << DPtoAL_data.aluOp2 << "(dec)" << endl;
-                cout << "S3: @AL: Result = 0x" << hex << getALUresult(DPtoAL_data) << "(hex) = " << dec << getALUresult(DPtoAL_data) << "(dec)" << endl;
-            }
-#endif
 
             nextsection = memoryStage;
         }
@@ -205,12 +182,6 @@ void Data_path::run() {
                 DP_S3_data.regRdAddr_s3 = CUtoDP_data.regRdAddr_s2;
                 DP_S3_data.reg1Content_s3 = reg1Content;
                 DP_S3_data.reg2Content_s3 = reg2Content;
-
-#ifdef LOGTOFILE
-                DP_S5_data.instrType_s5 = DP_S4_data.instrType_s4;
-                DP_S4_data.instrType_s4 = DP_S3_data.instrType_s3;
-                DP_S3_data.instrType_s3 = CUtoDP_data.instrType_s2;
-#endif
 
             }
 

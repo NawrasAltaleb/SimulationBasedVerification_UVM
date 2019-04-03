@@ -14,12 +14,9 @@
 #ifndef UVMSYSTEMC_TESTBENCH_H
 #define UVMSYSTEMC_TESTBENCH_H
 
-//#include <uvm>
 
 #include "vip_UVC.h"
 #include "scoreboard.h"
-//#include "Virtual_Sequencer.h"
-//using namespace uvm;
 
 class testbench : public uvm_env {
 public:
@@ -29,7 +26,6 @@ public:
     vip_uvc_Slave *uvc_slave1;
     vip_uvc_Slave *uvc_slave2;
     vip_uvc_Slave *uvc_slave3;
-//    virt_sequencer *virtual_sequencer;
     scoreboard *scoreboard1;
 
     UVM_COMPONENT_UTILS(testbench);
@@ -38,7 +34,6 @@ public:
             : uvm_env(name),
             uvc_master(0),
             uvc_slave0(0),uvc_slave1(0),uvc_slave2(0),uvc_slave3(0),
-//              virtual_sequencer(0),
               scoreboard1(0) {}
 
     void build_phase(uvm_phase &phase) {
@@ -55,8 +50,6 @@ public:
         uvc_slave3 = vip_uvc_Slave::type_id::create("uvc_slave3", this); /// Call to the factory which creates and instantiates this component dynamically
         assert(uvc_slave3);
 
-//        virtual_sequencer = virt_sequencer::type_id::create("virtual_sequencer", this);
-//        assert(virtual_sequencer);
         scoreboard1 = scoreboard::type_id::create("scoreboard1", this);
         assert(scoreboard1);
 
@@ -68,12 +61,6 @@ public:
     }
 
     void connect_phase(uvm_phase &phase) {
-//        virtual_sequencer->vip_Master_REQ_seqr = uvc_Master_REQ->agent->sequencer;
-//        virtual_sequencer->vip_Slave0_RSP_seqr = uvc_slave0->agent->sequencer;
-//        virtual_sequencer->vip_Slave1_RSP_seqr = uvc_slave1->agent->sequencer;
-//        virtual_sequencer->vip_Slave2_RSP_seqr = uvc_slave2->agent->sequencer;
-//        virtual_sequencer->vip_Slave3_RSP_seqr = uvc_slave3->agent->sequencer;
-
         uvc_master->agent->driver->item_collected_port_Master_REQ.connect(scoreboard1->listener_Master_REQ);
         uvc_master->agent->monitor->item_collected_port_Master_RSP.connect(scoreboard1->listener_Master_RSP);
         uvc_slave0->agent->monitor->item_collected_port_Slave_REQ.connect(scoreboard1->listener_Slave0_REQ);

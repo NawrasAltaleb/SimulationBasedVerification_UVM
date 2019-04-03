@@ -14,7 +14,6 @@
 #ifndef UVMSYSTEMC_VIP_MONITOR_H
 #define UVMSYSTEMC_VIP_MONITOR_H
 
-//#include <uvm>
 #include "vip_trans.h"
 #include "vip_if.h"
 using namespace uvm;

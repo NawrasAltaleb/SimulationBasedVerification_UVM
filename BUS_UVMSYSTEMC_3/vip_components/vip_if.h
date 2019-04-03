@@ -5,7 +5,6 @@
 #ifndef UVMSYSTEMC_VIP_IF_H
 #define UVMSYSTEMC_VIP_IF_H
 
-//#include <systemc>
 #include "Interfaces.h"
 #include "Compound.h"
 

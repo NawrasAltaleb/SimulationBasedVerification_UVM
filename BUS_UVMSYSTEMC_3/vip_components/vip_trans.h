@@ -7,7 +7,6 @@
 
 #include <uvm>
 #include "Compound.h"
-//using namespace uvm;
 
 class vip_trans_bus_req_t : public uvm::uvm_sequence_item {    /// Inherits from uvm_transaction
 public:

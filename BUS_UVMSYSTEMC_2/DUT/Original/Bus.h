@@ -3,8 +3,7 @@
 //
 #include <Interfaces.h>
 #include "systemc.h"
-
-#include "../../SingleMasterMultiSlave/ESL/Compound.h"
+#include "Compound.h"
 
 #ifndef PROJECT_BUS_H
 #define PROJECT_BUS_H

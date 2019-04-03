@@ -13,17 +13,12 @@
 #include <uvm>
 
 #include "vip_components/vip_if.h"
-//#include "DUT/DUT_Core.h"
 #include "DUT/Original/Core.h"
-//#include "DUT/Original/Bus.h"
-//#include "../BUS_UVMSYSTEMC/DUT/DUT_Core.h"
 #include "Tests/test_init.h"
-//using namespace uvm;
 
 int sc_main(int argc, char* argv[])
 {
     /// initiate an instance of your DUT
-//    Bus* my_dut = new Bus("my_dut");
     DUT_Core* my_dut = new DUT_Core("my_dut");
     uvm::uvm_test* my_test = new test_init("my_test");
 
@@ -74,19 +69,5 @@ int sc_main(int argc, char* argv[])
 
     /// Dynamically instantiates the test if given as argument and start it
     uvm::run_test();
-
-//    std::cout<<"Coverage: \n";
-//    std::cout<<"clk: "<<my_dut->clk.coveragePointsCount*100/my_dut->clk.coveragePointsTotal<<"%\n";
-//    std::cout<<"interconnect: "<<my_dut->interconnect.coveragePointsCount*100/my_dut->interconnect.coveragePointsTotal<<"%\n";
-//    std::cout<<"masterAgent: "<<my_dut->masterAgent.coveragePointsCount*100/my_dut->masterAgent.coveragePointsTotal<<"%\n";
-//    std::cout<<"slaveAgent0: "<<my_dut->slaveAgent0.coveragePointsCount*100/my_dut->slaveAgent0.coveragePointsTotal<<"%\n";
-//    std::cout<<"slaveAgent1: "<<my_dut->slaveAgent1.coveragePointsCount*100/my_dut->slaveAgent1.coveragePointsTotal<<"%\n";
-//    std::cout<<"slaveAgent2: "<<my_dut->slaveAgent2.coveragePointsCount*100/my_dut->slaveAgent2.coveragePointsTotal<<"%\n";
-//    std::cout<<"slaveAgent3: "<<my_dut->slaveAgent3.coveragePointsCount*100/my_dut->slaveAgent3.coveragePointsTotal<<"%\n";
-//
-//    for(int i=1;i<my_dut->masterAgent.coveragePointsTotal;i++){
-//        if(!my_dut->masterAgent.coveragePoints["MasterAgent_"+to_string(i)])
-//            std::cout<<"Uncovered: "<<"MasterAgent_"+to_string(i)<<"\n";
-//    }
     return 0;
 }

@@ -5,9 +5,8 @@
 #ifndef PROJECT_SLAVEAGENT_H
 #define PROJECT_SLAVEAGENT_H
 #include "systemc.h"
-#include "../../../Interfaces/Interfaces.h"
-#include "Compound_Bus.h"
-#include "../../../SingleMasterMultiSlave/ESL/Compound.h"
+#include "Interfaces.h"
+#include "Compound.h"
 
 
 struct SlaveAgent : public sc_module {
@@ -106,9 +105,8 @@ struct SlaveAgent : public sc_module {
                 }
                 agent_to_bus->set(wb_out);
             }
-#if SCAM == 0
+
             wait(SC_ZERO_TIME);
-#endif
         }
     }
 };

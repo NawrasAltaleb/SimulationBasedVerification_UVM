@@ -37,9 +37,8 @@ public:
             clk4->nb_write(true);
             clk5->nb_write(true);
             clk6->nb_write(true);
-#if SCAM == 0
+
             wait(SC_ZERO_TIME);
-#endif
         }
     }
 };

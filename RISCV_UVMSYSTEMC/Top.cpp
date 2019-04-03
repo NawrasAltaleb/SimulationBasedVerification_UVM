@@ -12,17 +12,10 @@
 
 #include <uvm>
 #include "options.h"
-
 #include "vip_components/vip_if.h"
-//#include "DUT/DUT_Core.h"
-//#include "DUT_MS/Original/Core.h"
-#include "DUT_MS/DUT_Core.h"
-
-
-//#include "DUT_pipelined/Core.h"
+#include "Golden_Reference/GOLDEN_Core.h"
+#include "DUT_pipelined/DUT_Core.h"
 //#include "DUT_pipelined/Original/Core.h"
-//#include "../RISCV_interrupts/ESL/Full/Core.h"
-//#include "../RISCV_Pipelined/ESL/Core.h"
 #include "Tests/Single_Type_Tests/Single_Type_Tests.h"
 #include "Tests/test_init.h"
 #include "Tests/Program_Test/test_program.h"
@@ -31,7 +24,10 @@ using namespace uvm;
 int sc_main(int argc, char* argv[])
 {
     /// initiate an instance of your DUT
+    G_Core* my_GM = new G_Core("my_GM");
+
     DUT_Core* my_dut = new DUT_Core("my_dut");
+//    Core* my_dut = new Core("my_dut");
     uvm::uvm_test* my_test;
 
     Options opt = parse_command_line_arguments(argc, argv);
@@ -59,35 +55,36 @@ int sc_main(int argc, char* argv[])
             my_test = new test_J("my_test");
         else if (opt.input_program == "test_mini")
             my_test = new test_mini("my_test");
-        else
-            my_test = new test_init("my_test");
     }
 
 
+
+    auto* g_vif_fromMemory = new vip_if_fromMemory;
+    auto* g_vif_toMemory = new vip_if_toMemory;
+    uvm_config_db<vip_if_fromMemory*>::set(NULL, "*.uvc_gm.*", "vif_fromMemory", g_vif_fromMemory);
+    uvm_config_db<vip_if_toMemory*>::set(NULL, "*.uvc_gm.*", "vif_toMemory", g_vif_toMemory);
 
     //define the connections types and configure which one is used in which agent
     auto* vif_fromMemory = new vip_if_fromMemory;
     auto* vif_toMemory = new vip_if_toMemory;
     /// register interface using the configuration database
     ///     Remark: remember to specify which interface will go to which agent!
-    uvm_config_db<vip_if_fromMemory*>::set(NULL, "*", "vif_fromMemory", vif_fromMemory);
-    uvm_config_db<vip_if_toMemory*>::set(NULL, "*", "vif_toMemory", vif_toMemory);
+    uvm_config_db<vip_if_fromMemory*>::set(NULL, "*.uvc.*", "vif_fromMemory", vif_fromMemory);
+    uvm_config_db<vip_if_toMemory*>::set(NULL, "*.uvc.*", "vif_toMemory", vif_toMemory);
 
 
+    my_GM->MEtoCO_port(g_vif_fromMemory->fromMemory_Port);
+    my_GM->COtoME_port(g_vif_toMemory->toMemory_Port);
     /// Connect DUT to the interface
     my_dut->MEtoCO_port(vif_fromMemory->fromMemory_Port);
     my_dut->COtoME_port(vif_toMemory->toMemory_Port);
     /// Dynamically instantiates the test if given as argument and start it
+
     uvm::run_test();
 
-    std::cout<<"Uncovered: \n";
-    std::cout<<"CPATH: "<<my_dut->cpath.coveragePointsCount*100/my_dut->cpath.coveragePointsTotal<<"%\n";
-    std::cout<<"Regs: "<<my_dut->RF.coveragePointsCount*100/my_dut->RF.coveragePointsTotal<<"%\n";
-    std::cout<<"ALU: "<<my_dut->alu.coveragePointsCount*100/my_dut->alu.coveragePointsTotal<<"%\n";
-    std::cout<<"DECODER: "<<my_dut->decoder.coveragePointsCount*100/my_dut->decoder.coveragePointsTotal<<"%\n";
-//    for(int i=1;i<my_dut->RF.coveragePointsTotal;i++){
-//        if(!my_dut->RF.coveragePoints["Regs_"+to_string(i)])
-//            std::cout<<"Uncovered: "<<"Regs_"+to_string(i)<<"\n";
-//    }
+    std::cout<<"Coverage: \n";
+    std::cout<<"CU: "<<my_dut->CU.coveragePointsCount*100/my_dut->CU.coveragePointsTotal<<"%\n";
+    std::cout<<"DP: "<<my_dut->DP.coveragePointsCount*100/my_dut->DP.coveragePointsTotal<<"%\n";
+    std::cout<<"RF: "<<my_dut->RF.coveragePointsCount*100/my_dut->RF.coveragePointsTotal<<"%\n";
     return 0;
 }

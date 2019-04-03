@@ -108,4 +108,20 @@ struct G_DecodedInstr {
 
 };
 
+struct G_DecodedInstrEXT {
+    G_EncType encType;
+    G_InstrType r_instr;
+    G_InstrType i_i_instr;
+    G_InstrType i_l_instr;
+    G_InstrType i_j_instr;
+    G_InstrType s_instr;
+    G_InstrType b_instr;
+    G_InstrType u_instr;
+    G_InstrType j_instr;
+    unsigned int rd_addr;
+    unsigned int rs1_addr;
+    unsigned int rs2_addr;
+    unsigned int imm;
+
+};
 #endif // GOLDEN_CPU_INTERFACES_H

@@ -5,11 +5,6 @@
 #ifndef PROJECT_CORE_H
 #define PROJECT_CORE_H
 
-// Adjusts code to be appropriate for the SCAM tool
-// 0 : Working ESL-Description
-// 1 : Properties can be generated
-#define SCAM 0
-
 #include "systemc.h"
 #include "Interfaces.h"
 #include "CPU_Interfaces.h"
@@ -17,7 +12,6 @@
 #include "Data_path.h"
 #include "Register_file.h"
 
-#if SCAM == 0
 class Core : public sc_module {
 public:
 
@@ -67,6 +61,6 @@ public:
         DP.RFtoDP_port(RFtoDP_channel);
     }
 };
-#endif
+
 
 #endif //PROJECT_CORE_H

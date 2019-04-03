@@ -8,7 +8,7 @@
 #include "systemc.h"
 #include "Interfaces.h"
 #include "GOLDEN_CPU_Interfaces.h"
-#include "../../RISCV_commons/Memory_Interfaces.h"
+#include "Memory_Interfaces.h"
 
 #define OPCODE_U1   0x37 //0110111
 #define OPCODE_U2   0x17 //0010111
@@ -39,6 +39,37 @@
 #define NEG_IMM_S_FIELD(x)  (static_cast<unsigned int>(0xFFFFF000) | POS_IMM_S_FIELD(x))
 #define NEG_IMM_B_FIELD(x)  (static_cast<unsigned int>(0xFFFFF000) | POS_IMM_B_FIELD(x))
 #define NEG_IMM_J_FIELD(x)  (static_cast<unsigned int>(0xFFF00000) | POS_IMM_J_FIELD(x))
+
+
+
+#define PRIVCODE_ECALL      0x000
+#define PRIVCODE_EBREAK     0x001
+//#define PRIVCODE_URET       0x002
+//#define PRIVCODE_SRET       0x102
+#define PRIVCODE_MRET       0x302
+//#define PRIVCODE_WFI        0x105
+//#define PRIVCODE_SFENCEVMA  0x009
+
+
+#define MCSR_MSTATUS    0x300
+#define MCSR_MISA       0x301
+#define MCSR_MIE        0x304
+#define MCSR_MTVEC      0x305
+#define MCSR_MSCRATCH   0x340
+#define MCSR_MEPC       0x341
+#define MCSR_MCAUSE     0x342
+#define MCSR_MTVAL      0x343
+#define MCSR_MIP        0x344
+#define MCSR_MVENDORID  0xF11
+#define MCSR_MARCHID    0xF12
+#define MCSR_MIMPID     0xF13
+#define MCSR_MHARTID    0xF14
+
+//#define MSTATUS_MIE(x)  ((x) & 0x00000008)
+//#define MTRAP_ML12I(x)  ((x) & 0x00001000)
+//#define MTRAP_MEI(x)    ((x) & 0x00000800)
+//#define MTRAP_MSI(x)    ((x) & 0x00000008)
+//#define MTRAP_MTI(x)    ((x) & 0x00000080)
 
 class G_ISA : public sc_module {
 public:
@@ -109,7 +140,10 @@ public:
 
                 /// Termination happens through a proper EBREAK or ECALL(SYS_exit)
                 if (fromMemoryData.loadedData == 0x100073) {
-                    std::cout << "**** ISA **** is terminating\n";
+//                    std::cout << "terminating instruction" << std::endl;
+//                    sc_stop();
+//                    wait(SC_ZERO_TIME);
+                    std::cout << "**** GM **** is terminating\n";
                     break;
                 }
 
@@ -121,7 +155,7 @@ public:
                 // Decode instruction
                 if (getInstrType(encodedInstr) == G_INSTR_UNKNOWN) {
                     // Terminate if Unknown instr
-                        std::cout << "**** ISA **** INSTR_UNKNOWN\n";
+                        std::cout << "**** GM **** INSTR_UNKNOWN 0x"<< hex << encodedInstr << "\n";
                         break;
 
                 } else if (getEncType(encodedInstr) == G_ENC_R) {
@@ -309,6 +343,10 @@ public:
             return G_ENC_I_L;
         } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_J) {
             return G_ENC_I_J;
+        } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_M) {
+            return G_ENC_I_M;
+        } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_S) {
+            return G_ENC_I_S;
         } else if (OPCODE_FIELD(encodedInstr) == OPCODE_S) {
             return G_ENC_S;
         } else if (OPCODE_FIELD(encodedInstr) == OPCODE_B) {
@@ -398,6 +436,32 @@ public:
             }
         } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_J) {
             return G_INSTR_JALR;
+        } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_M) {
+            if (FUNCT3_FIELD(encodedInstr) == 0x00) {
+                return G_INSTR_FENCE;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x01) {
+                return G_INSTR_FENCEI;
+            } else {
+                return G_INSTR_UNKNOWN;
+            }
+        } else if (OPCODE_FIELD(encodedInstr) == OPCODE_I_S) {
+            if (FUNCT3_FIELD(encodedInstr) == 0x00) {
+                return G_INSTR_PRIV;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x01) {
+                return G_INSTR_CSRRW;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x02) {
+                return G_INSTR_CSRRS;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x03) {
+                return G_INSTR_CSRRC;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x05) {
+                return G_INSTR_CSRRWI;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x06) {
+                return G_INSTR_CSRRSI;
+            } else if (FUNCT3_FIELD(encodedInstr) == 0x07) {
+                return G_INSTR_CSRRCI;
+            } else {
+                return G_INSTR_UNKNOWN;
+            }
         } else if (OPCODE_FIELD(encodedInstr) == OPCODE_S) {
             if (FUNCT3_FIELD(encodedInstr) == 0x00) {
                 return G_INSTR_SB;
@@ -441,6 +505,7 @@ public:
             OPCODE_FIELD(encodedInstr) == OPCODE_I_I ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_L ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_J ||
+            OPCODE_FIELD(encodedInstr) == OPCODE_I_S ||
             OPCODE_FIELD(encodedInstr) == OPCODE_S ||
             OPCODE_FIELD(encodedInstr) == OPCODE_B) {
             return RS1_FIELD(encodedInstr);
@@ -466,6 +531,7 @@ public:
             OPCODE_FIELD(encodedInstr) == OPCODE_I_I ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_L ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_J ||
+            OPCODE_FIELD(encodedInstr) == OPCODE_I_S ||
             OPCODE_FIELD(encodedInstr) == OPCODE_U1 ||
             OPCODE_FIELD(encodedInstr) == OPCODE_U2 ||
             OPCODE_FIELD(encodedInstr) == OPCODE_J) {
@@ -479,6 +545,8 @@ public:
     unsigned int getImmediate(unsigned int encodedInstr) const {
         if (OPCODE_FIELD(encodedInstr) == OPCODE_I_I ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_L ||
+            OPCODE_FIELD(encodedInstr) == OPCODE_I_M ||
+            OPCODE_FIELD(encodedInstr) == OPCODE_I_S ||
             OPCODE_FIELD(encodedInstr) == OPCODE_I_J) {
             if (SIGN_FIELD(encodedInstr) == 0)
                 return POS_IMM_I_FIELD(encodedInstr);
@@ -663,6 +731,26 @@ public:
         }
     }
 
+
+    G_PrivInstrType getPrivInstrType(unsigned int encodedInstr) const {
+        if(POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_ECALL) {
+            return G_PrivInstrType::G_INSTR_ECALL;
+        } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_EBREAK) {
+            return G_PrivInstrType::G_INSTR_EBREAK;
+//    } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_URET) {
+//        return PrivInstrType::INSTR_URET;
+//    } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_SRET) {
+//        return PrivInstrType::INSTR_SRET;
+        } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_MRET) {
+            return G_PrivInstrType::G_INSTR_MRET;
+//    } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_WFI) {
+//        return PrivInstrType::INSTR_WFI;
+//    } else if (POS_IMM_I_FIELD(encodedInstr) == PRIVCODE_SFENCEVMA) {
+//        return PrivInstrType::INSTR_SFENCEVMA;
+        } else {
+            return G_PrivInstrType::G_INSTR_PRIV_UNKNOWN;
+        }
+    }
 
     unsigned int getBranchresult(unsigned int encodedInstr, unsigned int aluResult, unsigned int pcReg) const {
         if (getInstrType(encodedInstr) == G_INSTR_BEQ && aluResult == 0) {

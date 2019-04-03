@@ -262,4 +262,40 @@ public:
             SCV_FIELD(G_imm);
     }
 };
+
+
+template<>
+class scv_extensions<G_DecodedInstrEXT> : public scv_extensions_base<G_DecodedInstrEXT> {
+public:
+    scv_extensions<G_EncType> encType;
+    scv_extensions<G_InstrType> r_instr;
+    scv_extensions<G_InstrType> i_i_instr;
+    scv_extensions<G_InstrType> i_l_instr;
+    scv_extensions<G_InstrType> i_j_instr;
+    scv_extensions<G_InstrType> s_instr;
+    scv_extensions<G_InstrType> b_instr;
+    scv_extensions<G_InstrType> u_instr;
+    scv_extensions<G_InstrType> j_instr;
+    scv_extensions<unsigned int> rd_addr;
+    scv_extensions<unsigned int> rs1_addr;
+    scv_extensions<unsigned int> rs2_addr;
+    scv_extensions<unsigned int> imm;
+
+    SCV_EXTENSIONS_CTOR(G_DecodedInstrEXT) {
+        //must be in order
+        SCV_FIELD(encType);
+        SCV_FIELD(r_instr);
+        SCV_FIELD(i_i_instr);
+        SCV_FIELD(i_l_instr);
+        SCV_FIELD(i_j_instr);
+        SCV_FIELD(s_instr);
+        SCV_FIELD(b_instr);
+        SCV_FIELD(u_instr);
+        SCV_FIELD(j_instr);
+        SCV_FIELD(rd_addr);
+        SCV_FIELD(rs1_addr);
+        SCV_FIELD(rs2_addr);
+        SCV_FIELD(imm);
+    }
+};
 #endif //UVMSYSTEMC_DATA_EXT_H

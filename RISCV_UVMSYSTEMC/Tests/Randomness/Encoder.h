@@ -14,40 +14,11 @@ unsigned int encode_instruction(G_DecodedInstr decodedinstr) {
 
     unsigned int _rd = decodedinstr.G_rd_addr << 7;
     unsigned int _rs1 = decodedinstr.G_rs1_addr << 15;
-    unsigned int _rs2 = decodedinstr.G_rs2_addr << 20;
+    unsigned int _rs2 = decodedinstr.G_rs2_addr << 20;//FIXME:
     unsigned int _opcode = 0;
     unsigned int _funct3 = 0;
     unsigned int _funct7 = 0;
     unsigned int _imm = 0;
-
-    /// position the immediate
-//    if (decodedinstr.G_encType == G_EncType::G_ENC_R) {
-//        _imm = 0;
-//    } else if (decodedinstr.G_encType == G_EncType::G_ENC_I_I || decodedinstr.G_encType == G_EncType::G_ENC_I_M ||
-//               decodedinstr.G_encType == G_EncType::G_ENC_I_J || decodedinstr.G_encType == G_EncType::G_ENC_I_L ||
-//               decodedinstr.G_encType == G_EncType::G_ENC_I_S) {
-//        _imm = (decodedinstr.G_imm & 0x00000FFF) << 20;
-//    } else if (decodedinstr.G_encType == G_EncType::G_ENC_S) {
-//        unsigned int imm_1 = (decodedinstr.G_imm & 0x0000001F) << 7;
-//        unsigned int imm_2 = (decodedinstr.G_imm & 0x00000FE0) << 25;
-//        _imm = imm_2 | imm_1;
-//    } else if (decodedinstr.G_encType == G_EncType::G_ENC_B) {
-//        unsigned int imm_1 = (decodedinstr.G_imm & 0x00000800) << 7;
-//        unsigned int imm_2 = (decodedinstr.G_imm & 0x0000001E) << 8;
-//        unsigned int imm_3 = (decodedinstr.G_imm & 0x000007E0) << 25;
-//        unsigned int imm_4 = (decodedinstr.G_imm & 0x00001000) << 31;
-//        _imm = imm_4 | imm_3 | imm_2 | imm_1;
-//    } else if (decodedinstr.G_encType == G_EncType::G_ENC_U) {
-//        _imm = (decodedinstr.G_imm & 0xFFFFF000) << 0;
-//    } else if (decodedinstr.G_encType == G_EncType::G_ENC_J) {
-//        unsigned int imm_1 = (decodedinstr.G_imm & 0x000FF000) << 12;
-//        unsigned int imm_2 = (decodedinstr.G_imm & 0x00000800) << 20;
-//        unsigned int imm_3 = (decodedinstr.G_imm & 0x000007FE) << 21;
-//        unsigned int imm_4 = (decodedinstr.G_imm & 0x00100000) << 31;
-//        _imm = imm_4 | imm_3 | imm_2 | imm_1;
-//    } else { //G_EncType::Error_Type
-//        _imm = 0;
-//    }
 
     /// calculate the opcode, func3, func7 and create the encoded instruction
     if (decodedinstr.G_encType == G_EncType::G_ENC_U && decodedinstr.G_instrType == G_InstrType::G_INSTR_LUI) {
@@ -338,9 +309,12 @@ unsigned int encode_instruction(G_DecodedInstr decodedinstr) {
         _opcode = 0x73;
         _funct3 = 0x7 << 12;
         encodedInstr = _imm | _rs1 | _funct3 | _rd | _opcode;
-    } else
+    } else {
         encodedInstr = 0x00000013; // NOP instruction
-
+        std::cout << "\nweird instruction!!!" << std::endl;
+        std::cout << dec << "...... instr: " << decodedinstr.G_instrType << " rs1: " << decodedinstr.G_rs1_addr << " rs2: "
+                  << decodedinstr.G_rs2_addr << " rd: " << decodedinstr.G_rd_addr << " ENC: " << decodedinstr.G_encType << " imm: " << decodedinstr.G_imm << "\n";
+    }
 //    std::cout<<"\nEncoder result  "<< hex << encodedInstr << std::endl;
     return encodedInstr;
 }

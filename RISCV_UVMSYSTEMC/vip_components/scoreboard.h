@@ -16,137 +16,109 @@
 #define UVMSYSTEMC_SCOREBOARD_H
 
 #include <uvm>
-#include "subscriber_fromMemory.h"
-#include "subscriber_toMemory.h"
-#include "Interfaces.h"
-#include "Golden_Reference/GOLDEN_Core.h"
+#include "systemc.h"
+#include "subscriber.h"
+using namespace std;
 using namespace uvm;
 
-#define CheckingInterval 1000
 
 class scoreboard : public uvm_scoreboard {
 public:
-    uvm_analysis_export<vip_trans_fromMemory> listener_fromMemory; /// Exports used to connect to the subscribers
-    uvm_analysis_export<vip_trans_toMemory> listener_toMemory;
-    subscriber_fromMemory *subscr_fromMemory;
-    subscriber_toMemory *subscr_toMemory;
-    /// instance of ISA need to be added to the scoreboard
-    G_Core goldenReference;
-    // Channel instantiation
-    Blocking<CUtoME_IF> toMemory_channel;
-    Blocking<MEtoCU_IF> fromMemory_channel;
-    // Variables for communicating with goldenReference
-    vip_trans_toMemory toMemory_trans;
-    vip_trans_fromMemory fromMemory_trans;
-    vector<vip_trans_toMemory> dut_mem_trans;
-    vector<vip_trans_toMemory> gm_mem_trans;
-    int runningCount;
+    uvm_analysis_export<vip_trans_fromMemory> listener_fromMemory_gm; /// Exports used to connect to the subscribers
+    uvm_analysis_export<vip_trans_toMemory> listener_toMemory_gm;
+    uvm_analysis_export<vip_trans_fromMemory> listener_fromMemory_dut; /// Exports used to connect to the subscribers
+    uvm_analysis_export<vip_trans_toMemory> listener_toMemory_dut;
 
-    scoreboard(uvm_component_name name) : uvm_scoreboard(name),
-                                            toMemory_channel("toMemory_channel"),
-                                            fromMemory_channel("fromMemory_channel"),
-                                            goldenReference("goldenModel"){
-        //Port binding:
-        goldenReference.COtoME_port(toMemory_channel);
-        goldenReference.MEtoCO_port(fromMemory_channel);
-        runningCount = 0;
-    }
+    subscriber_fromMemory *subscr_fromMemory_gm;
+    subscriber_toMemory *subscr_toMemory_gm;
+    subscriber_fromMemory *subscr_fromMemory_dut;
+    subscriber_toMemory *subscr_toMemory_dut;
+
+    vector<vip_trans_toMemory> mem_trans_dut;
+    vector<vip_trans_toMemory> mem_trans_gm;
+
+    scoreboard(uvm_component_name name) : uvm_scoreboard(name) {}
 
     UVM_COMPONENT_UTILS(scoreboard)
 
     void build_phase(uvm_phase &phase) {
         uvm_scoreboard::build_phase(phase);
 
-        uvm_config_db<uvm_object*>::set(this, "subscr_fromMemory", "sb", this); /// a trick for subscriber to have a reference to it's containing scoreboard
-        uvm_config_db<uvm_object*>::set(this, "subscr_toMemory", "sb", this);
-        subscr_fromMemory = subscriber_fromMemory::type_id::create("subscr_fromMemory", this);
-        assert(subscr_fromMemory);
-        subscr_toMemory = subscriber_toMemory::type_id::create("subscr_toMemory", this);
-        assert(subscr_toMemory);
+        uvm_config_db<uvm_object *>::set(this, "subscr_fromMemory_gm", "sb", this); /// a trick for subscriber to have a reference to it's containing scoreboard
+        subscr_fromMemory_gm = subscriber_fromMemory::type_id::create("subscr_fromMemory_gm", this);
+        assert(subscr_fromMemory_gm);
+
+        uvm_config_db<uvm_object *>::set(this, "subscr_toMemory_gm", "sb", this);
+        subscr_toMemory_gm = subscriber_toMemory::type_id::create("subscr_toMemory_gm", this);
+        assert(subscr_toMemory_gm);
+
+        uvm_config_db<uvm_object *>::set(this, "subscr_fromMemory_dut", "sb", this); /// a trick for subscriber to have a reference to it's containing scoreboard
+        subscr_fromMemory_dut = subscriber_fromMemory::type_id::create("subscr_fromMemory_dut", this);
+        assert(subscr_fromMemory_dut);
+
+        uvm_config_db<uvm_object *>::set(this, "subscr_toMemory_dut", "sb", this);
+        subscr_toMemory_dut = subscriber_toMemory::type_id::create("subscr_toMemory_dut", this);
+        assert(subscr_toMemory_dut);
     }
 
     void connect_phase(uvm_phase &phase) {
-        listener_fromMemory(subscr_fromMemory->analysis_export);
-        listener_toMemory(subscr_toMemory->analysis_export);
+        listener_fromMemory_gm(subscr_fromMemory_gm->analysis_export);
+        listener_toMemory_gm(subscr_toMemory_gm->analysis_export);
+
+        listener_fromMemory_dut(subscr_fromMemory_dut->analysis_export);
+        listener_toMemory_dut(subscr_toMemory_dut->analysis_export);
     }
 
     /// Via the subscribers the expected and the processed transactions become available which are used for the actual checking
-    void write_listener_fromMemory(const vip_trans_fromMemory &t) {
-//        std::cout << "\t\t\t\t\t\t\t\t\t\t\t-------- fromMemory -------- reply: " << std::hex << t.fromMemory.loadedData << std::endl;
-
-        fromMemory_trans = t;
-        fromMemory_channel.write(fromMemory_trans.fromMemory);
+    void write_listener_fromMemory_gm(const vip_trans_fromMemory &t) {
+//        std::cout << "\t\t\t\t\t\t\t\t\t\t\t-------- GM  fromMemory -------- reply: " << std::hex << t.fromMemory.loadedData << std::endl;
     }
 
-    void write_listener_toMemory(const vip_trans_toMemory &t) {
+    void write_listener_toMemory_gm(const vip_trans_toMemory &t) {
+        if (t.toMemory.req == ME_AccessType::ME_WR) {
+//            std::cout << "+++++++++ GM  store +++++++++ addr: 0x" << hex << t.toMemory.addrIn << " Data: " << dec << t.toMemory.dataIn << " MaskType: " << t.toMemory.mask
+//                      << std::endl;
+            mem_trans_gm.push_back(t);
+        }
+    }
+
+    /// Via the subscribers the expected and the processed transactions become available which are used for the actual checking
+    void write_listener_fromMemory_dut(const vip_trans_fromMemory &t) {
+//        std::cout << "\t\t\t\t\t\t\t\t\t\t\t-------- DUT fromMemory -------- reply: " << std::hex << t.fromMemory.loadedData << std::endl;
+    }
+
+    void write_listener_toMemory_dut(const vip_trans_toMemory &t) {
         if (t.toMemory.req == ME_AccessType::ME_WR) {
 //            std::cout << "+++++++++ DUT store +++++++++ addr: 0x" << hex << t.toMemory.addrIn << " Data: " << dec << t.toMemory.dataIn << " MaskType: " << t.toMemory.mask
 //                      << std::endl;
-        }
-
-        toMemory_channel.read(toMemory_trans.toMemory);
-        if (toMemory_trans.toMemory.req == ME_AccessType::ME_WR) {
-//            std::cout << "+++++++++ ISA store +++++++++ addr: 0x" << hex << toMemory_trans.toMemory.addrIn << " Data: " << dec << toMemory_trans.toMemory.dataIn
-//                      << " MaskType: " << toMemory_trans.toMemory.mask << std::endl;
-        }
-
-        dut_mem_trans.push_back(t);
-        gm_mem_trans.push_back(toMemory_trans);
-        runningCount++;
-        if(runningCount > CheckingInterval + 20){
-            compare_Interval();
-            runningCount = runningCount - CheckingInterval;
+            mem_trans_dut.push_back(t);
         }
     }
 
-    void compare_Interval(){
-//        uvm_report_info("compare Interval", "Start", UVM_MEDIUM);
-
-        vip_trans_toMemory dut_t;
-        vip_trans_toMemory gm_t;
-        for (int i = 0; i < CheckingInterval; ++i) {
-            dut_t = dut_mem_trans.at(i);
-            gm_t = gm_mem_trans.at(i);
-
-            if (!dut_t.do_compare(gm_t)) {
-                std::stringstream message;
-                message << "DUT: addr(0x" << hex << dut_t.toMemory.addrIn << ") data(" << dec << dut_t.toMemory.dataIn <<
-                        ") req(" << dut_t.toMemory.req << ") mask(" << dut_t.toMemory.mask << ") --- ";
-                message << "GM: addr(0x" << hex << gm_t.toMemory.addrIn << ") data(" << dec << gm_t.toMemory.dataIn <<
-                        ") req(" << gm_t.toMemory.req << ") mask(" << gm_t.toMemory.mask << ")";
-                uvm_report_error("toMemory", message.str(), UVM_MEDIUM);
-
+    void run_phase(uvm::uvm_phase &phase) {
+        while (true) {
+            if (!mem_trans_gm.empty() && !mem_trans_dut.empty()) {
+                vip_trans_toMemory dut_t = *(mem_trans_dut.begin());
+                vip_trans_toMemory gm_t = *(mem_trans_gm.begin());
+                if (!dut_t.do_compare(gm_t)) {
+                    std::stringstream message;
+                    message << "DUT: addr(0x" << hex << dut_t.toMemory.addrIn << ") data(" << dec << dut_t.toMemory.dataIn <<
+                            ") req(" << dut_t.toMemory.req << ") mask(" << dut_t.toMemory.mask << ") --- ";
+                    message << "GM: addr(0x" << hex << gm_t.toMemory.addrIn << ") data(" << dec << gm_t.toMemory.dataIn <<
+                            ") req(" << gm_t.toMemory.req << ") mask(" << gm_t.toMemory.mask << ")";
+//                    cout<<message.str()<<"\n";
+                    uvm_report_error("toMemory", message.str(), UVM_MEDIUM);
+                } //else
+//                    uvm_report_info("toMemory", "Equal behavior", UVM_MEDIUM);
+                mem_trans_dut.erase(mem_trans_dut.begin());
+                mem_trans_gm.erase(mem_trans_gm.begin());
             }
+            wait(SC_ZERO_TIME);
         }
-
-        dut_mem_trans.erase(dut_mem_trans.begin(), dut_mem_trans.begin()+CheckingInterval);
-        gm_mem_trans.erase(gm_mem_trans.begin(), gm_mem_trans.begin()+CheckingInterval);
-
-        uvm_report_info("compare Interval", "Done", UVM_MEDIUM);
     }
 
     void report_phase(uvm_phase &phase) {
-//        uvm_report_info("compare Final", "Start", UVM_MEDIUM);
-
-        vip_trans_toMemory dut_t;
-        vip_trans_toMemory gm_t;
-        for (int i = 0; i < runningCount; ++i) {
-            dut_t = dut_mem_trans.at(i);
-            gm_t = gm_mem_trans.at(i);
-
-            if (!dut_t.do_compare(gm_t)) {
-                std::stringstream message;
-                message << "DUT: addr(0x" << hex << dut_t.toMemory.addrIn << ") data(" << dec << dut_t.toMemory.dataIn <<
-                        ") req(" << dut_t.toMemory.req << ") mask(" << dut_t.toMemory.mask << ") --- ";
-                message << "GM: addr(0x" << hex << gm_t.toMemory.addrIn << ") data(" << dec << gm_t.toMemory.dataIn <<
-                        ") req(" << gm_t.toMemory.req << ") mask(" << gm_t.toMemory.mask << ")";
-                uvm_report_error("toMemory", message.str(), UVM_MEDIUM);
-            }
-        }
-
-//        dut_mem_trans.erase(dut_mem_trans.begin(), dut_mem_trans.begin()+runningCount);
-//        gm_mem_trans.erase(gm_mem_trans.begin(), gm_mem_trans.begin()+runningCount);
-        uvm_report_info("compare Final", "Done", UVM_MEDIUM);
+        std::cout << dec << "size: DUT " << mem_trans_dut.size() << " while GM " << mem_trans_gm.size() << "\n";
     }
 };
 

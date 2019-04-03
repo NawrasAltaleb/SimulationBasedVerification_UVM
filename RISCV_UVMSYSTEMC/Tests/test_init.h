@@ -24,35 +24,12 @@
 #include "sequence_init.h"
 using namespace uvm;
 
-class test_init : public uvm_test {
-public:
-    testbench *tb;
-
-    test_init(uvm_component_name name) : uvm_test(name) {}
-
-    UVM_COMPONENT_UTILS(test_init)
-
-    void build_phase(uvm_phase &phase) {
-        uvm_test::build_phase(phase);
-        tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase", "default_sequence",
-                                                 sequence_init<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
-    }
-
-    void end_of_elaboration_phase(uvm_phase &phase) {
-        uvm_report_info("Init Test", "**************************** UVM TEST STARTED ****************************", uvm::UVM_NONE);
-        std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
-    }
-
-    void report_phase(uvm_phase &phase) {
-        std::cout << "\n\n\n";
-        uvm_report_info("Init Test", "**************************** UVM TEST ENDED ****************************", uvm::UVM_NONE);
-    }
-};
 
 class test_mini : public uvm_test {
 public:
     testbench *tb;
+    sequence_mini<vip_trans_fromMemory, vip_trans_toMemory> *seq_dut;
+    sequence_mini<vip_trans_fromMemory, vip_trans_toMemory> *seq_gm;
 
     test_mini(uvm_component_name name) : uvm_test(name) {}
 
@@ -61,8 +38,10 @@ public:
     void build_phase(uvm_phase &phase) {
         uvm_test::build_phase(phase);
         tb = testbench::type_id::create("tb", this);
-        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc.agent.sequencer.run_phase", "default_sequence",
-                                                 sequence_mini<vip_trans_fromMemory, vip_trans_toMemory>::type_id::get());
+        seq_dut = sequence_mini<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_dut",this);
+        seq_gm = sequence_mini<vip_trans_fromMemory, vip_trans_toMemory>::type_id::create("seq_gm",this);
+        seq_dut->seedNUM = 999;
+        seq_gm->seedNUM = 999;
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {
@@ -70,9 +49,27 @@ public:
         std::cout << "\n\n\n\n\t\t\t toMemory Direction \t\t\t   ----   \t\t\t fromMemory Direction \n";
     }
 
+    void run_phase(uvm::uvm_phase &phase) {
+        SC_FORK
+                            sc_spawn(sc_bind(&test_mini::doSeq, this, &phase, 0)),
+                            sc_spawn(sc_bind(&test_mini::doSeq, this, &phase, 1))
+        SC_JOIN
+    }
+
+    void doSeq(uvm_phase* phase, int choice) {
+        phase->raise_objection(this, "Starting test");
+        if (choice == 0)
+            seq_dut->start(tb->uvc->agent->sequencer);
+        else if (choice == 1)
+            seq_gm->start(tb->uvc_gm->agent->sequencer);
+        phase->drop_objection(this, "Finishing test");
+    }
+
     void report_phase(uvm_phase &phase) {
         std::cout << "\n\n\n";
         uvm_report_info("Mini Test", "**************************** UVM TEST ENDED ****************************", uvm::UVM_NONE);
     }
 };
+
 #endif //UVMSYSTEMC_TEST_INIT_H
+// testbench *tb;

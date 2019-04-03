@@ -7,8 +7,8 @@
 
 
 #include "systemc.h"
-#include "../../../Interfaces/Interfaces.h"
-#include "Compound_Bus.h"
+#include "Interfaces.h"
+#include "Compound.h"
 
 
 struct Interconnect : public sc_module {
@@ -153,9 +153,8 @@ struct Interconnect : public sc_module {
                 }
 
             }
-#if SCAM == 0
+
             wait(SC_ZERO_TIME);
-#endif
         }
     }
 };

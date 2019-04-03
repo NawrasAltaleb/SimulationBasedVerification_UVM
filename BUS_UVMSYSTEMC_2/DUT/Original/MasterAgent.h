@@ -1,14 +1,13 @@
 //
-// Created by tobias on 09.03.17.
+// Created by Nawras Altaleb (nawras.altaleb89@gmail.com) on 10/24/18.
 //
 
 #ifndef PROJECT_MASTERAGENT_H
 #define PROJECT_MASTERAGENT_H
 
 #include "systemc.h"
-#include "../../../Interfaces/Interfaces.h"
-#include "Compound_Bus.h"
-#include "../../../SingleMasterMultiSlave/ESL/Compound.h"
+#include "Interfaces.h"
+#include "Compound.h"
 
 
 struct MasterAgent : public sc_module {
@@ -143,9 +142,8 @@ struct MasterAgent : public sc_module {
                 }
 
             }
-#if SCAM == 0
+
             wait(SC_ZERO_TIME);
-#endif
         }
     }
 

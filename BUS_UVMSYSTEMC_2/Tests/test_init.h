@@ -19,11 +19,8 @@
 #ifndef UVMSYSTEMC_TEST_INIT_H
 #define UVMSYSTEMC_TEST_INIT_H
 
-//#include <uvm>
 #include "vip_components/testbench.h"
 #include "sequence_init.h"
-//#include "vip_components/Virtual_Sequence.h"
-//using namespace uvm;
 
 class test_init : public uvm_test {
 public:
@@ -46,19 +43,7 @@ public:
         seq_Slave1 = sequence_RSP<vip_trans_bus_resp_t>::type_id::create("seq_Slave1",this);
         seq_Slave2 = sequence_RSP<vip_trans_bus_resp_t>::type_id::create("seq_Slave2",this);
         seq_Slave3 = sequence_RSP<vip_trans_bus_resp_t>::type_id::create("seq_Slave3",this);
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.virtual_sequencer.run_phase", "default_sequence",
-//                                                 virt_sequence::type_id::get());
 
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc_master.agent.sequencer.run_phase", "default_sequence",
-//                                                 sequence_REQ<vip_trans_bus_req_t>::type_id::get());
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc_slave0.agent.sequencer.run_phase", "default_sequence",
-//                                                 sequence_RSP<vip_trans_bus_resp_t>::type_id::get());
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc_slave1.agent.sequencer.run_phase", "default_sequence",
-//                                                 sequence_RSP<vip_trans_bus_resp_t>::type_id::get());
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc_slave2.agent.sequencer.run_phase", "default_sequence",
-//                                                 sequence_RSP<vip_trans_bus_resp_t>::type_id::get());
-//        uvm_config_db<uvm_object_wrapper *>::set(this, "tb.uvc_slave3.agent.sequencer.run_phase", "default_sequence",
-//                                                 sequence_RSP<vip_trans_bus_resp_t>::type_id::get());
     }
 
     void end_of_elaboration_phase(uvm_phase &phase) {

@@ -12,6 +12,9 @@
 #include "GOLDEN_ISA.h"
 #include "GOLDEN_Regs.h"
 
+#define REGFILE(x) RF.reg_file_##x
+#define PCREG isa.pcReg
+
 class G_Core : public sc_module {
 public:
     // Constructor
